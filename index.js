@@ -16,37 +16,65 @@ async function fetchFilesFromRepo(owner, repo) {
 async function generateMarkdown(files) {
   let markdownContent = '';
 
+  const markdownTemplate = (filePath, fileType, content) => {
+    let formattedContent = `\n## ${filePath}:\n`;
+    formattedContent += '```' + fileType + '\n';
+    formattedContent += content;
+    formattedContent += '\n```\n';
+    return formattedContent;
+  };
+
   for (const file of files) {
-    if (file.type === 'dir' && file.path === 'node_modules') {
+    // Skip specific directories
+    if (file.type === 'dir' && (file.path === 'node_modules' || file.path === 'dist' || file.path.startsWith('.'))) {
       continue;
     }
 
-    if (file.type === 'dir' && file.path === 'dist') {
-      continue;
+    console.log(`Processing file with path "${file.path}" and type "${file.type}"`);
+
+    if (file.type === 'file') {
+      const response = await axios.get(file.download_url);
+      const fileContent = response.data;
+      const fileTypeMappings = {
+        'js': 'js',
+        'html': 'html',
+        'css': 'css',
+        'txt': 'txt',
+        'md': 'md',
+        'json': 'json', // Mapping for JSON files
+        // ... add more mappings as needed
+      };
+      const extension = file.path.split('.').pop().toLowerCase(); // Extract and convert to lower case for case-insensitivity
+
+      console.log(`File extension: ${extension}`);
+      console.log(``);
+
+      // Check if the content is JSON
+      let isJson = false;
+      try {
+        JSON.parse(fileContent);
+        isJson = true;
+      } catch (e) {
+        isJson = false;
+      }
+
+      // TODO: FILE CONTENT IS NOT JSON
+
+      // Format JSON content
+      if (isJson) {
+        const formattedJson = JSON.stringify(JSON.parse(fileContent), null, 2);
+        console.log('JSON file detected. Formatting content...', formattedJson);
+        markdownContent += markdownTemplate(file.path, 'json', formattedJson);
+      } else {
+        const fileType = fileTypeMappings[extension] || ''; // Default to an empty string if the extension is not in the mappings
+        markdownContent += markdownTemplate(file.path, fileType, fileContent);
+      }
     }
-
-    if (file.type === 'dir' && file.path.startsWith('.')) {
-      continue;
-    }
-
-    console.log(`Processing file with path ${file.path} and type ${file.type}`);
-
-    if (file.type === 'file' && file.path.endsWith('.js')) {
-      const fileContent = await axios.get(file.download_url);
-      markdownContent += `\n## ${file.path}:\n`;
-      markdownContent += '```js\n'; // Assuming JavaScript files; adjust accordingly
-      markdownContent += fileContent.data;
-      markdownContent += '\n```\n';markdownContent += ``
-    }
-
-    // if (file.type === 'dir') {
-    //   const subFiles = await fetchFilesFromRepo('geins-io', 'ralph-module-gtm');
-    //   markdownContent += await generateMarkdown(subFiles);
-    // }
   }
 
   return markdownContent;
 }
+
 
 async function writeToFile(filename, content) {
     try {

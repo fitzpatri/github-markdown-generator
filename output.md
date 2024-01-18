@@ -19,7 +19,7 @@ dist/
 ```
 
 ## CHANGELOG.md:
-```
+```md
 # CHANGELOG
 
 ## Version 3.6.0 (2024-01-10)
@@ -74,7 +74,7 @@ SOFTWARE.
 ```
 
 ## README.md:
-```
+```md
 [![NPM Package][npm]][npm-url]
 [![NPM Downloads][npm-downloads-per-month]][npm-trends]
 ![Geins][mit-shield]
@@ -171,16 +171,6 @@ If you are already using the `@nuxtjs/gtm` module, you should uninstall it and u
 [mit-shield]: https://img.shields.io/badge/license-MIT-green
 [mit-url]: https://en.wikipedia.org/wiki/MIT_License
 
-```
-
-## package-lock.json:
-```
-[object Object]
-```
-
-## package.json:
-```
-[object Object]
 ```
 
 ## ralph-module-gtm.code-workspace:
