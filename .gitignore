@@ -1,5 +1,5 @@
 # .gitignore
 .env
 
-./output/
-./output-combined/
+output/
+output-combined/
