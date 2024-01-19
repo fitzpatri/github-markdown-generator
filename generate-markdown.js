@@ -23,6 +23,15 @@ async function fetchFilesFromDirectory(owner, repo, path = '') {
         continue;
       }
 
+      extension = file.path.split('.').pop().toLowerCase(); // Extract and convert to lower case for case-insensitivity
+      if (extension === 'png' || extension === 'jpg' || extension === 'jpeg' || extension === 'gif' || extension === 'svg' || extension === 'ico') {
+        continue;
+      }
+
+      if (extension === 'ttf' || extension === 'woff' || extension === 'woff2' || extension === 'eot') {
+        continue;
+      }
+
       console.log(`Processing file with path "${file.path}" and type "${file.type}"`);
 
       if (file.type === 'dir') {
@@ -102,11 +111,11 @@ async function writeToFile(filename, content) {
     }
 }
 
-fetchFilesFromDirectory('geins-io', 'ralph-module-gtm')
+fetchFilesFromDirectory('geins-io', 'ralph-module-cms-json-container')
   .then(files => {
     return Promise.all([
-      generateMarkdown(files).then(markdown => writeToFile('complete-content.md', markdown)),
-      generateFileList(files).then(fileList => writeToFile('file-list.txt', fileList))
+      generateMarkdown(files).then(markdown => writeToFile('./output/ralph-module-cms-json-container-files-content.md', markdown)),
+      generateFileList(files).then(fileList => writeToFile('./output/ralph-module-cms-json-container-files-list.txt', fileList))
     ])
   })
   .catch(error => console.error('Error running script:', error));
