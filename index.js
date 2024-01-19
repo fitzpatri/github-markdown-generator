@@ -5,17 +5,35 @@ const fs = require('fs').promises;
 
 const githubToken = process.env.GITHUB_TOKEN;
 
-async function fetchFilesFromRepo(owner, repo) {
+async function fetchFilesFromDirectory(owner, repo, path = '') {
+  const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
+  const headers = {
+    headers: {
+      Authorization: `token ${githubToken}`,
+    },
+  };
+
   try {
-    const url = `https://api.github.com/repos/${owner}/${repo}/contents/`;
-    const headers = {
-      headers: {
-        Authorization: `token ${githubToken}`,
-      },
-    };
     const response = await axios.get(url, headers);
     console.log('Repository data fetched successfully');
-    return response.data;
+
+    let files = [];
+    for (const file of response.data) {
+      if (file.type === 'dir' && (file.path === 'node_modules' || file.path === 'dist' || file.path.startsWith('.'))) {
+        continue;
+      }
+
+      console.log(`Processing file with path "${file.path}" and type "${file.type}"`);
+
+      if (file.type === 'dir') {
+        const subDirectoryFiles = await fetchFilesFromDirectory(owner, repo, file.path);
+        files = files.concat(subDirectoryFiles);
+      } else {
+        files.push(file);
+      }
+    }
+
+    return files;
   } catch (error) {
     console.error('Error fetching repository data', error);
     return [];
@@ -34,11 +52,6 @@ async function generateMarkdown(files) {
   };
 
   for (const file of files) {
-    // Skip specific directories
-    if (file.type === 'dir' && (file.path === 'node_modules' || file.path === 'dist' || file.path.startsWith('.'))) {
-      continue;
-    }
-
     console.log(`Processing file with path "${file.path}" and type "${file.type}"`);
 
     if (file.type === 'file') {
@@ -58,30 +71,25 @@ async function generateMarkdown(files) {
       console.log(`File extension: ${extension}`);
       console.log(``);
 
-      // Check if the content is JSON
-      let isJson = false;
-      try {
-        JSON.parse(fileContent);
-        isJson = true;
-      } catch (e) {
-        isJson = false;
-      }
+      // TODO: Handle file content that's an object (e.g. JSON)
+      // Current output renders as: [object Object]
 
-      // TODO: FILE CONTENT IS NOT JSON
-
-      // Format JSON content
-      if (isJson) {
-        const formattedJson = JSON.stringify(JSON.parse(fileContent), null, 2);
-        console.log('JSON file detected. Formatting content...', formattedJson);
-        markdownContent += markdownTemplate(file.path, 'json', formattedJson);
-      } else {
-        const fileType = fileTypeMappings[extension] || ''; // Default to an empty string if the extension is not in the mappings
-        markdownContent += markdownTemplate(file.path, fileType, fileContent);
-      }
+      const fileType = fileTypeMappings[extension] || ''; // Default to an empty string if the extension is not in the mappings
+      markdownContent += markdownTemplate(file.path, fileType, fileContent);
     }
   }
 
   return markdownContent;
+}
+
+async function generateFileList(files) {
+  let fileList = '';
+
+  for (const file of files) {
+    fileList += `${file.path}\n`;
+  }
+
+  return fileList;
 }
 
 async function writeToFile(filename, content) {
@@ -94,6 +102,11 @@ async function writeToFile(filename, content) {
     }
 }
 
-fetchFilesFromRepo('geins-io', 'ralph-module-gtm')
-  .then(files => generateMarkdown(files))
-  .then(markdown => writeToFile('output.md', markdown));
+fetchFilesFromDirectory('geins-io', 'ralph-module-gtm')
+  .then(files => {
+    return Promise.all([
+      generateMarkdown(files).then(markdown => writeToFile('complete-content.md', markdown)),
+      generateFileList(files).then(fileList => writeToFile('file-list.txt', fileList))
+    ])
+  })
+  .catch(error => console.error('Error running script:', error));
