@@ -2,7 +2,7 @@
 
 ## Overview
 
-The GitHub Markdown Generator includes two Node.js scripts designed for different purposes: one to fetch files from a GitHub repository and generate a comprehensive Markdown document, and another to concatenate local Markdown files into a single document. These scripts are useful for documentation, code reviews, or archiving content.
+The GitHub Markdown Generator includes two Node.js scripts designed for different purposes: one to fetch files from a GitHub repository and generate a comprehensive Markdown document, and another to concatenate local Markdown files into a single document. These scripts are useful for documentation, feeding AI, code reviews, or archiving content.
 
 ## Features
 
