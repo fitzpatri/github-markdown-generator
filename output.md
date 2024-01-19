@@ -173,6 +173,16 @@ If you are already using the `@nuxtjs/gtm` module, you should uninstall it and u
 
 ```
 
+## package-lock.json:
+```json
+[object Object]
+```
+
+## package.json:
+```json
+[object Object]
+```
+
 ## ralph-module-gtm.code-workspace:
 ```
 [object Object]

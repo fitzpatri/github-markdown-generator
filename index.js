@@ -1,10 +1,19 @@
+require('dotenv').config();
+
 const axios = require('axios');
 const fs = require('fs').promises;
+
+const githubToken = process.env.GITHUB_TOKEN;
 
 async function fetchFilesFromRepo(owner, repo) {
   try {
     const url = `https://api.github.com/repos/${owner}/${repo}/contents/`;
-    const response = await axios.get(url);
+    const headers = {
+      headers: {
+        Authorization: `token ${githubToken}`,
+      },
+    };
+    const response = await axios.get(url, headers);
     console.log('Repository data fetched successfully');
     return response.data;
   } catch (error) {
@@ -74,7 +83,6 @@ async function generateMarkdown(files) {
 
   return markdownContent;
 }
-
 
 async function writeToFile(filename, content) {
     try {
