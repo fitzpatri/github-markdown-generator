@@ -111,11 +111,11 @@ async function writeToFile(filename, content) {
     }
 }
 
-fetchFilesFromDirectory('geins-io', 'ralph-module-cms-json-container')
+fetchFilesFromDirectory('owner', 'repo')
   .then(files => {
     return Promise.all([
-      generateMarkdown(files).then(markdown => writeToFile('./output/ralph-module-cms-json-container-files-content.md', markdown)),
-      generateFileList(files).then(fileList => writeToFile('./output/ralph-module-cms-json-container-files-list.txt', fileList))
+      generateMarkdown(files).then(markdown => writeToFile('./output/repo-files-content.md', markdown)),
+      generateFileList(files).then(fileList => writeToFile('./output/repo-gtm-files-list.txt', fileList))
     ])
   })
   .catch(error => console.error('Error running script:', error));
