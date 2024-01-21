@@ -82,6 +82,10 @@ async function generateMarkdown(files) {
 
       // TODO: Handle file content that's an object (e.g. JSON)
       // Current output renders as: [object Object]
+      if (extension === 'json') {
+        // Convert object to formatted JSON string
+        fileContent = JSON.stringify(fileContent, null, 2);
+      }
 
       const fileType = fileTypeMappings[extension] || ''; // Default to an empty string if the extension is not in the mappings
       markdownContent += markdownTemplate(file.path, fileType, fileContent);
