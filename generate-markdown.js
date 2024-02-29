@@ -2,11 +2,11 @@ require('dotenv').config();
 
 const axios = require('axios');
 const fs = require('fs').promises;
-
 const githubToken = process.env.GITHUB_TOKEN;
+const fetchConfig = require('./fetch-config.js');
 
-async function fetchFilesFromDirectory(owner, repo, path = '') {
-  const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
+async function fetchFilesFromDirectory(owner, repo, path = '', branch = 'main') {
+  const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${branch}`;
   const headers = {
     headers: {
       Authorization: `token ${githubToken}`,
@@ -35,7 +35,8 @@ async function fetchFilesFromDirectory(owner, repo, path = '') {
       console.log(`Processing file with path "${file.path}" and type "${file.type}"`);
 
       if (file.type === 'dir') {
-        const subDirectoryFiles = await fetchFilesFromDirectory(owner, repo, file.path);
+        console.log(`Entering directory: ${file.path}`);
+        const subDirectoryFiles = await fetchFilesFromDirectory(owner, repo, file.path, branch);
         files = files.concat(subDirectoryFiles);
       } else {
         files.push(file);
@@ -115,11 +116,18 @@ async function writeToFile(filename, content) {
     }
 }
 
-fetchFilesFromDirectory('owner', 'repo')
+fetchFilesFromDirectory(fetchConfig.owner, fetchConfig.repo, '', fetchConfig.branch)
   .then(files => {
+    console.log('Files fetched:', files.map(file => file.path));
     return Promise.all([
-      generateMarkdown(files).then(markdown => writeToFile('./output/repo-files-content.md', markdown)),
-      generateFileList(files).then(fileList => writeToFile('./output/repo-gtm-files-list.txt', fileList))
+      generateMarkdown(files).then(markdown => writeToFile(
+        './output/content/' + fetchConfig.output.filename + '.md',
+        markdown
+      )),
+      generateFileList(files).then(fileList => writeToFile(
+        './output/filelist/' + fetchConfig.output.filename + '.txt',
+        fileList
+      )),
     ])
   })
   .catch(error => console.error('Error running script:', error));
